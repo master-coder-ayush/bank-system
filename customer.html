@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Customer records</title>
+  
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    .button-container {
+      display: flex;
+      justify-content: center;
+    }
+    .button-container button {
+      margin: 5px;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+    .modal-content {
+      background-color: #fefefe;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 600px;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h2 {
+      margin: 0;
+    }
+    .modal-close {
+      cursor: pointer;
+    }
+    .modal-body {
+      margin-top: 20px;
+    }
+    .transfer-button {
+      display: flex;
+      justify-content: center;
+    }
+    .transfer-button button {
+      margin: 5px;
+    }
+    .form-field {
+      margin-bottom: 10px;
+    }
+    .form-field label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .form-field input {
+      width: 100%;
+      padding: 5px;
+    }
+  </style>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <!-- font Awesome    -->
+      <link rel="stylesheet" type="text/css" href="css/font-awesome.min.css">
+      <link href="https://fonts.googleapis.com/css?family=Boogaloo|Montserrat" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <h1>Customers</h1>
+    <table class="table table-dark table-striped">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Balance</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="peopleTableBody">
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal Pop-up -->
+  <div id="myModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Person Details</h2>
+        <span class="modal-close">&times;</span>
+      </div>
+      <div class="modal-body">
+        <p><strong>Name:</strong> <span id="modal-name"></span></p>
+        <p><strong>Email:</strong> <span id="modal-email"></span></p>
+        <p><strong>Balance:</strong> <span id="modal-number"></span>&nbsp; $</p>
+        <div class="transfer-button">
+          <button id="modal-transfer" class="btn btn-light">Transfer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transfer Modal -->
+  <div id="transferModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Select Customer to Transfer To</h2>
+        <span class="modal-close">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="form-field">
+          <label for="transfer-email">Email:</label>
+          <input type="email" id="transfer-email">
+        </div>
+        <div class="form-field">
+          <label for="transfer-amount">Amount:</label>
+          <input type="number" id="transfer-amount" min="0">
+        </div>
+        <div class="transfer-button">
+          <button id="confirm-transfer" class="btn btn-light">Confirm Transfer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Sample People Data
+    var peopleData = {
+      "people": [
+      {
+        "name": "John Doe",
+        "email": "johndoe@example.com",
+        "number": 20
+      },
+      {
+        "name": "Jane Smith",
+        "email": "janesmith@example.com",
+        "number": 50
+      },
+      {
+        "name": "Michael Johnson",
+        "email": "michaeljohnson@example.com",
+        "number": 70
+      },
+      {
+        "name": "Emily Davis",
+        "email": "emilydavis@example.com",
+        "number": 90
+      },
+      {
+        "name": "David Wilson",
+        "email": "davidwilson@example.com",
+        "number": 120
+      },
+      {
+        "name": "Sarah Anderson",
+        "email": "sarahanderson@example.com",
+        "number": 150
+      },
+      {
+        "name": "Robert Taylor",
+        "email": "roberttaylor@example.com",
+        "number": 180
+      },
+      {
+        "name": "Olivia Clark",
+        "email": "oliviaclark@example.com",
+        "number": 210
+      },
+      {
+        "name": "James Brown",
+        "email": "jamesbrown@example.com",
+        "number": 240
+      },
+      {
+        "name": "Sophia Green",
+        "email": "sophiagreen@example.com",
+        "number": 270
+      }
+      ]
+    };
+
+    // Function to display the modal pop-up with person details
+    function displayModal(name, email, number) {
+      // Set the person details in the modal
+      document.getElementById('modal-name').textContent = name;
+      document.getElementById('modal-email').textContent = email;
+      document.getElementById('modal-number').textContent = number;
+
+      // Show the modal
+      const modal = document.getElementById('myModal');
+      modal.style.display = 'block';
+
+      // Close the modal when the user clicks on 'x' or outside the modal
+      const modalClose = document.querySelector('.modal-close');
+      modalClose.onclick = function() {
+        modal.style.display = 'none';
+      };
+      window.onclick = function(event) {
+        if (event.target == modal) {
+          modal.style.display = 'none';
+        }
+      };
+
+      // Transfer button click event
+      const transferButton = document.getElementById('modal-transfer');
+      transferButton.addEventListener('click', () => {
+        displayTransferModal(email, number);
+      });
+    }
+
+    // Function to display the transfer modal
+    function displayTransferModal(email, amount) {
+      // Show the transfer modal
+      const transferModal = document.getElementById('transferModal');
+      transferModal.style.display = 'block';
+
+      // Close the transfer modal when the user clicks on 'x' or outside the modal
+      const transferModalClose = transferModal.querySelector('.modal-close');
+      transferModalClose.onclick = function() {
+        transferModal.style.display = 'none';
+      };
+      window.onclick = function(event) {
+        if (event.target == transferModal) {
+          transferModal.style.display = 'none';
+        }
+      };
+
+      // Confirm transfer button click event
+      const confirmTransferButton = document.getElementById('confirm-transfer');
+      confirmTransferButton.addEventListener('click', () => {
+        const transferEmail = document.getElementById('transfer-email').value;
+        const transferAmount = document.getElementById('transfer-amount').value;
+        initiateTransfer(email, transferEmail, amount, transferAmount);
+      });
+    }
+
+    // Function to initiate a transfer
+    function initiateTransfer(senderEmail, receiverEmail, senderAmount, transferAmount) {
+      // Find the sender and receiver in the people data
+      const sender = peopleData.people.find(person => person.email === senderEmail);
+      const receiver = peopleData.people.find(person => person.email === receiverEmail);
+
+      // Check if sender and receiver exist
+      if (sender && receiver) {
+        // Check if sender has enough balance for the transfer
+        if (sender.number >= transferAmount) {
+          // Update the sender and receiver amounts
+          sender.number -= transferAmount;
+          receiver.number += parseInt(transferAmount);
+
+          // Display a success message
+          alert('Transfer successful!');
+
+          // Refresh the table
+          displayPeopleTable();
+        } else {
+          // Display an error message if sender doesn't have enough balance
+          alert('Insufficient balance for transfer!');
+        }
+      } else {
+        // Display an error message if sender or receiver is not found
+        alert('Invalid sender or receiver!');
+      }
+    }
+
+    // Function to display the people table
+    function displayPeopleTable() {
+      const tableBody = document.getElementById('peopleTableBody');
+      tableBody.innerHTML = '';
+
+      peopleData.people.forEach(person => {
+        // Create a new row for each person
+        const row = document.createElement('tr');
+
+        // Create cells for name, email, number, and actions
+        const nameCell = document.createElement('td');
+        nameCell.textContent = person.name;
+        const emailCell = document.createElement('td');
+        emailCell.textContent = person.email;
+        const numberCell = document.createElement('td');
+        numberCell.textContent = person.number+" $";
+        const actionsCell = document.createElement('td');
+
+        // Create select/view button
+        const selectViewButton = document.createElement('button');
+        selectViewButton.textContent = 'Select/View';
+        selectViewButton.addEventListener('click', () => {
+          displayModal(person.name, person.email, person.number);
+        });
+
+        // Append buttons to actions cell
+        actionsCell.appendChild(selectViewButton);
+
+        // Append cells to the row
+        row.appendChild(nameCell);
+        row.appendChild(emailCell);
+        row.appendChild(numberCell);
+        row.appendChild(actionsCell);
+
+        // Append the row to the table body
+        tableBody.appendChild(row);
+      });
+    }
+
+    // Initial display of the people table
+    displayPeopleTable();
+  </script>
+</body>
+</html>
